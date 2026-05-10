@@ -37,6 +37,17 @@ func main() {
     }
     db.SetConnMaxLifetime(time.Minute * 5)
 
+    // Attempt to apply migrations found in migrations/001_init.sql
+    if mig, err := os.ReadFile("migrations/001_init.sql"); err == nil {
+        if _, err := db.Exec(string(mig)); err != nil {
+            logger.Error("migration apply failed", zap.Error(err))
+        } else {
+            logger.Info("migrations applied")
+        }
+    } else {
+        logger.Warn("migration file not found", zap.Error(err))
+    }
+
     rdb := redis.NewClient(&redis.Options{Addr: redisAddr})
 
     store := policy.NewStore(db)
