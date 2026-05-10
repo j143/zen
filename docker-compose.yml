@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ca
+      POSTGRES_PASSWORD: ca_secret
+      POSTGRES_DB: zia_ca
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  ca-server:
+    build: .
+    environment:
+      DB_URL: "postgres://ca:ca_secret@postgres:5432/zia_ca?sslmode=disable"
+      REDIS_ADDR: "redis:6379"
+      CA_CLOUD: "zscalerthree"
+    ports: ["8080:8080"]
+    depends_on: [postgres, redis]
+
+volumes:
+  pgdata:
